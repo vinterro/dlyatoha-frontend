@@ -11,6 +11,7 @@ import { User } from '../../models/user';
 import { Comment } from '../../models/comment/comment';
 import { catchError, switchMap, takeUntil } from 'rxjs/operators';
 import { SnackBarService } from '../../services/snack-bar.service';
+import { DisService } from 'src/app/services/dis.service';
 
 @Component({
     selector: 'app-post',
@@ -30,9 +31,10 @@ export class PostComponent implements OnDestroy {
         private authService: AuthenticationService,
         private authDialogService: AuthDialogService,
         private likeService: LikeService,
+        private disService: DisService,
         private commentService: CommentService,
         private snackBarService: SnackBarService
-    ) {}
+    ) { }
 
     public ngOnDestroy() {
         this.unsubscribe$.next();
@@ -69,6 +71,24 @@ export class PostComponent implements OnDestroy {
 
         this.likeService
             .likePost(this.post, this.currentUser)
+            .pipe(takeUntil(this.unsubscribe$))
+            .subscribe((post) => (this.post = post));
+    }
+
+    public disPost() {
+        if (!this.currentUser) {
+            this.catchErrorWrapper(this.authService.getUser())
+                .pipe(
+                    switchMap((userResp) => this.disService.disPost(this.post, userResp)),
+                    takeUntil(this.unsubscribe$)
+                )
+                .subscribe((post) => (this.post = post));
+
+            return;
+        }
+
+        this.disService
+            .disPost(this.post, this.currentUser)
             .pipe(takeUntil(this.unsubscribe$))
             .subscribe((post) => (this.post = post));
     }

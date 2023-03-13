@@ -13,6 +13,11 @@
       <mat-icon matBadge="{{post.reactions.length}}" matBadgeColor="accent" matBadgeSize="medium"
         [matBadgeHidden]="post.reactions.length === 0" aria-label="Like">favorite</mat-icon>
     </button>
+    <button mat-icon-button color="primary" (click)="disPost()">
+      <mat-icon matBadge=" {{post.disreactions.length}}" matBadgeColor="accent" matBadgeSize="medium"
+        [matBadgeHidden]="post.disreactions.length === 0" aria-label="dis">thumb_down</mat-icon>
+    </button>
+
     <button mat-icon-button color="accent">
       <mat-icon aria-label="Share">share</mat-icon>
     </button>

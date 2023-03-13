@@ -3,12 +3,13 @@ import { HttpInternalService } from './http-internal.service';
 import { Post } from '../models/post/post';
 import { NewReaction } from '../models/reactions/newReaction';
 import { NewPost } from '../models/post/new-post';
+import { NewDisreaction } from '../models/disreactions/newDisReaction';
 
 @Injectable({ providedIn: 'root' })
 export class PostService {
     public routePrefix = '/api/posts';
 
-    constructor(private httpService: HttpInternalService) {}
+    constructor(private httpService: HttpInternalService) { }
 
     public getPosts() {
         return this.httpService.getFullRequest<Post[]>(`${this.routePrefix}`);
@@ -20,5 +21,9 @@ export class PostService {
 
     public likePost(reaction: NewReaction) {
         return this.httpService.postFullRequest<Post>(`${this.routePrefix}/like`, reaction);
+    }
+
+    public disPost(disreaction: NewDisreaction) {
+        return this.httpService.postFullRequest<Post>(`${this.routePrefix}/dis`, disreaction);
     }
 }
