@@ -1,42 +1,77 @@
 import { Injectable } from '@angular/core';
 import { AuthenticationService } from './auth.service';
 import { Post } from '../models/post/post';
+import { Comment } from '../models/comment/comment'
 import { PostService } from './post.service';
 import { User } from '../models/user';
 import { map, catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { NewDisreaction } from '../models/disreactions/newDisReaction';
 
-@Injectable({ providedIn: 'root' })
-export class DisService {
-    public constructor(private authService: AuthenticationService, private postService: PostService) { }
+import { CommentService } from './comment.service';
 
-    public disPost(post: Post, currentUser: User) {
-        const innerPost = post;
+@Injectable({ providedIn: 'root' })
+
+
+export class DisService {
+    public constructor(private authService: AuthenticationService, private postService: PostService, private commentService: CommentService) { }
+
+
+    public dis(PostOrComment: Post | Comment, currentUser: User) {
+        const innerPoOrCo = PostOrComment;
 
         const disreaction: NewDisreaction = {
-            entityId: innerPost.id,
+            entityId: innerPoOrCo.id,
             isDis: true,
             userId: currentUser.id
         };
 
         // update current array instantly
-        let hasDisreaction = innerPost.disreactions.some((x) => x.user.id === currentUser.id);
-        innerPost.disreactions = hasDisreaction
-            ? innerPost.disreactions.filter((x) => x.user.id !== currentUser.id)
-            : innerPost.disreactions.concat({ isDis: true, user: currentUser });
-        hasDisreaction = innerPost.disreactions.some((x) => x.user.id === currentUser.id);
+        let hasReaction = innerPoOrCo.reactions.some((x) => x.user.id === currentUser.id);
+        if (hasReaction) {
+            innerPoOrCo.reactions = innerPoOrCo.reactions.filter((x) => x.user.id !== currentUser.id)
+        }
 
-        return this.postService.disPost(disreaction).pipe(
-            map(() => innerPost),
-            catchError(() => {
-                // revert current array changes in case of any error
-                innerPost.disreactions = hasDisreaction
-                    ? innerPost.disreactions.filter((x) => x.user.id !== currentUser.id)
-                    : innerPost.disreactions.concat({ isDis: true, user: currentUser });
+        hasReaction = innerPoOrCo.reactions.some((x) => x.user.id === currentUser.id);
 
-                return of(innerPost);
-            })
-        );
+
+
+        let hasDisreaction = innerPoOrCo.disreactions.some((x) => x.user.id === currentUser.id);
+        innerPoOrCo.disreactions = hasDisreaction
+            ? innerPoOrCo.disreactions.filter((x) => x.user.id !== currentUser.id)
+            : innerPoOrCo.disreactions.concat({ isDis: true, user: currentUser });
+        hasDisreaction = innerPoOrCo.disreactions.some((x) => x.user.id === currentUser.id);
+
+
+        if (innerPoOrCo.hasOwnProperty('previewImage')) {
+            return this.postService.disPost(disreaction).pipe(
+                map(() => innerPoOrCo),
+                catchError(() => {
+                    // revert current array changes in case of any error
+                    innerPoOrCo.disreactions = hasDisreaction
+                        ? innerPoOrCo.disreactions.filter((x) => x.user.id !== currentUser.id)
+                        : innerPoOrCo.disreactions.concat({ isDis: true, user: currentUser });
+
+                    return of(innerPoOrCo);
+                })
+            );
+        } else {
+            return this.commentService.disComment(disreaction).pipe(
+                map(() => innerPoOrCo),
+                catchError(() => {
+                    // revert current array changes in case of any error
+                    innerPoOrCo.disreactions = hasDisreaction
+                        ? innerPoOrCo.disreactions.filter((x) => x.user.id !== currentUser.id)
+                        : innerPoOrCo.disreactions.concat({ isDis: true, user: currentUser });
+
+                    return of(innerPoOrCo);
+                })
+            );
+        }
+
+
+
     }
+
+
 }

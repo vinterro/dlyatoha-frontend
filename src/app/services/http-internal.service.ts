@@ -8,7 +8,7 @@ export class HttpInternalService {
     public baseUrl: string = environment.apiUrl;
     public headers = new HttpHeaders();
 
-    constructor(private http: HttpClient) {}
+    constructor(private http: HttpClient) { }
 
     public getHeaders(): HttpHeaders {
         return this.headers;

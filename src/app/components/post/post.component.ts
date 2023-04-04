@@ -1,4 +1,4 @@
-import { Component, Input, OnDestroy } from '@angular/core';
+import { Component, ElementRef, EventEmitter, HostListener, Input, OnDestroy, Output, TemplateRef, ViewChild } from '@angular/core';
 import { Post } from '../../models/post/post';
 import { AuthenticationService } from '../../services/auth.service';
 import { AuthDialogService } from '../../services/auth-dialog.service';
@@ -12,6 +12,9 @@ import { Comment } from '../../models/comment/comment';
 import { catchError, switchMap, takeUntil } from 'rxjs/operators';
 import { SnackBarService } from '../../services/snack-bar.service';
 import { DisService } from 'src/app/services/dis.service';
+import { EditService } from 'src/app/services/Edit.service';
+import { PostService } from 'src/app/services/post.service';
+import { LikeUsersComponent } from '../like-users/like-users.component';
 
 @Component({
     selector: 'app-post',
@@ -19,17 +22,36 @@ import { DisService } from 'src/app/services/dis.service';
     styleUrls: ['./post.component.sass']
 })
 export class PostComponent implements OnDestroy {
+    @ViewChild('tooltipContent', { read: TemplateRef }) tooltipContent!: TemplateRef<any>;
     @Input() public post: Post;
     @Input() public currentUser: User;
+    @Output() postDeleted = new EventEmitter<number>();
+    @HostListener('document:click', ['$event'])
+    onDocumentClick(event: MouseEvent) {
+        if (!this._elementRef.nativeElement.contains(event.target)) {
+            this.hideLikeUserComponent();
+            this.hideDisUserComponent();
 
+
+        }
+    }
+    public showLikeButton = false;
+    public showDisButton = false;
+    public showLikeUser = false;
+    public showDisUser = false;
     public showComments = false;
     public newComment = {} as NewComment;
+    public newPost = {} as Post;
+    public loading = false;
 
     private unsubscribe$ = new Subject<void>();
 
     public constructor(
+        private _elementRef: ElementRef,
         private authService: AuthenticationService,
         private authDialogService: AuthDialogService,
+        private editService: EditService,
+        private postService: PostService,
         private likeService: LikeService,
         private disService: DisService,
         private commentService: CommentService,
@@ -57,41 +79,91 @@ export class PostComponent implements OnDestroy {
         this.showComments = !this.showComments;
     }
 
+    public CommentLikereactNoUser(likecomment: Comment) {
+        if (likecomment) {
+            this.catchErrorWrapper(this.authService.getUser())
+                .pipe(
+                    switchMap((userResp) => this.likeService.like(likecomment, userResp)),
+                    takeUntil(this.unsubscribe$)
+                )
+                .subscribe((comment) => (likecomment = comment as Comment));
+
+
+            return;
+        }
+    }
+
+    public CommentDisreactNoUser(discomment: Comment) {
+        if (discomment) {
+            this.catchErrorWrapper(this.authService.getUser())
+                .pipe(
+                    switchMap((userResp) => this.disService.dis(discomment, userResp)),
+                    takeUntil(this.unsubscribe$)
+                )
+                .subscribe((comment) => (discomment = comment as Comment));
+
+
+            return;
+        }
+    }
+
+
+
     public likePost() {
         if (!this.currentUser) {
             this.catchErrorWrapper(this.authService.getUser())
                 .pipe(
-                    switchMap((userResp) => this.likeService.likePost(this.post, userResp)),
+                    switchMap((userResp) => this.likeService.like(this.post, userResp)),
                     takeUntil(this.unsubscribe$)
                 )
-                .subscribe((post) => (this.post = post));
+                .subscribe((post) => (this.post = post as Post));
+
 
             return;
         }
 
         this.likeService
-            .likePost(this.post, this.currentUser)
+            .like(this.post, this.currentUser)
             .pipe(takeUntil(this.unsubscribe$))
-            .subscribe((post) => (this.post = post));
+            .subscribe((post) => (this.post = post as Post));
+        if (this.post.reactions.length === 0) {
+            this.hideLikeUserComponent()
+        }
+        if (this.post.disreactions.length === 0) {
+            this.hideDisUserComponent()
+        }
     }
+
 
     public disPost() {
         if (!this.currentUser) {
             this.catchErrorWrapper(this.authService.getUser())
                 .pipe(
-                    switchMap((userResp) => this.disService.disPost(this.post, userResp)),
+                    switchMap((userResp) => this.disService.dis(this.post, userResp)),
                     takeUntil(this.unsubscribe$)
                 )
-                .subscribe((post) => (this.post = post));
+                .subscribe((post) => (this.post = post as Post));
 
             return;
         }
 
+
+
+
         this.disService
-            .disPost(this.post, this.currentUser)
+            .dis(this.post, this.currentUser)
             .pipe(takeUntil(this.unsubscribe$))
-            .subscribe((post) => (this.post = post));
+            .subscribe((post) => (this.post = post as Post));
+        if (this.post.reactions.length === 0) {
+            this.hideLikeUserComponent()
+        }
+        if (this.post.disreactions.length === 0) {
+            this.hideDisUserComponent()
+        }
+
     }
+
+
 
     public sendComment() {
         this.newComment.authorId = this.currentUser.id;
@@ -127,4 +199,92 @@ export class PostComponent implements OnDestroy {
     private sortCommentArray(array: Comment[]): Comment[] {
         return array.sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt));
     }
+
+
+    public Edit() {
+        this.editService.openEdit(this.post)
+    }
+
+
+
+
+    public Delete() {
+
+
+        const deleteSubscription = this.postService.deletePost(this.post.id);
+
+        this.loading = true;
+
+        deleteSubscription.pipe(takeUntil(this.unsubscribe$)).subscribe(
+            (postIdResp) => {
+                this.postDeleted.emit(postIdResp.body);
+                this.loading = false;
+            },
+            (error) => this.snackBarService.showErrorMessage(error)
+        );
+        console.log("deleted post");
+    }
+
+
+
+    hideLikeUserComponent() {
+        this.showLikeUser = false;
+    }
+
+    hideDisUserComponent() {
+        this.showDisUser = false;
+    }
+
+    editComment(comment: Comment) {
+        const index = this.post.comments.findIndex(c => c.id === comment.id);
+        if (index > -1) {
+            this.post.comments[index] = comment;
+            // this.post.comments = this.sortCommentArray(this.post.comments);
+        }
+    }
+
+    deleteComment(deleteCommentId: number) {
+        this.post.comments = this.post.comments.filter(comment => comment.id !== deleteCommentId);
+    }
+    public sendEditComment(comment: Comment) {
+        // this.isOriginalPost = false;
+
+
+        var commentSubcription = this.commentService.editComment(comment)
+
+
+
+        this.loading = true;
+
+        commentSubcription.pipe(takeUntil(this.unsubscribe$)).subscribe(
+            (respComment) => {
+                this.editComment(respComment.body);
+
+
+                this.loading = false;
+            },
+            (error) => this.snackBarService.showErrorMessage(error)
+        );
+
+
+    }
+
+    public sendDeleteComment(commentId: number) {
+
+        const deleteSubscription = this.commentService.deletePost(commentId);
+
+        this.loading = true;
+
+        deleteSubscription.pipe(takeUntil(this.unsubscribe$)).subscribe(
+            (commentIdResp) => {
+                this.deleteComment(commentIdResp.body)
+                this.loading = false;
+            },
+            (error) => this.snackBarService.showErrorMessage(error)
+        );
+
+
+    }
+
+
 }

@@ -1,0 +1,6 @@
+<div class="reactions">
+    <div *ngFor="let reaction of reactions" class="user-likes">
+        <img class="avatar avatar-size" src="{{reaction.user.avatar}}" alt="Ava">
+        <p> {{reaction.user.userName}} </p>
+    </div>
+</div>

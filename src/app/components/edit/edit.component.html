@@ -1,0 +1,32 @@
+<div mat-dialog-content>
+    <mat-card class="post-edit-container">
+        <div *ngIf="loading" class="mat-spinner-wrapper">
+            <mat-spinner></mat-spinner>
+        </div>
+        <mat-card-content>
+            <mat-form-field>
+                <textarea [(ngModel)]="post.body" matInput placeholder="Write something..."></textarea>
+            </mat-form-field>
+            <div class="mat-card-image-container" *ngIf="post.previewImage">
+                <img mat-card-image *ngIf="post.previewImage" mat-card-image src="{{post.previewImage}}" alt="Photo">
+                <mat-icon aria-label="Send" (click)="removeImage()">close</mat-icon>
+            </div>
+            <div class="image-container" *ngIf="!post.previewImage">
+                <mat-icon aria-label="Send" (click)="removeImage()">close</mat-icon>
+                <img mat-card-image class="post-image" *ngIf="imageUrl" mat-card-image src="{{imageUrl}}" alt="Photo">
+            </div>
+        </mat-card-content>
+        <mat-card-actions align="end">
+            <div class="image-load" *ngIf="!post.previewImage && !imageUrl" [style.display]="'block'">
+                <input hidden #file accept="image/*" type="file" (change)="loadImage($event.target)">
+                <button mat-icon-button color="accent" (click)="file.click()">
+                    <mat-icon aria-label="Choose an image">image</mat-icon>
+                </button>
+            </div>
+            <button class="send-button" mat-icon-button color="primary" matTooltip="Post it" (click)="sendEditPost()">
+                <mat-icon aria-label="Edit">send</mat-icon>
+            </button>
+        </mat-card-actions>
+        <button mat-raised-button (click)="close()">Back</button> 
+    </mat-card>
+</div>

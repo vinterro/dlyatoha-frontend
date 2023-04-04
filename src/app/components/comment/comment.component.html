@@ -3,19 +3,68 @@
     <img mat-card-avatar src="{{comment.author.avatar}}" alt="Avatar">
     <mat-card-title>{{comment.author.userName}} </mat-card-title>
     <div>{{comment.createdAt | date:'d/M/yy, h:mm a'}}</div>
+
+
+
+    <div *ngIf="currentUser" class="options">
+      <div *ngIf="currentUser.userName == comment.author.userName">
+        <p class="edit" (click)="Edit()">
+          <mat-icon aria-label="Edit">edit</mat-icon>
+        </p>
+        <p class="delete" (click)="Delete()">
+          <mat-icon aria-label="Delete">delete</mat-icon>
+        </p>
+      </div>
+    </div>
   </mat-card-header>
-  <mat-card-content>
+
+
+  <mat-card-content class="body-comment" *ngIf="!editing">
     <p>{{comment.body}}</p>
   </mat-card-content>
+
+  <div class="edit-comment" *ngIf="editing">
+    <mat-form-field>
+      <textarea matInput [(ngModel)]="comment.body"></textarea>
+    </mat-form-field>
+    <button mat-icon-button color="primary" matTooltip="Send" (click)="editComment()">
+      <mat-icon aria-label="Edit">send</mat-icon>
+    </button>
+  </div>
+
+
+
   <mat-card-actions class="actions-buttons" align="end">
-    <button mat-icon-button color="primary">
-      <mat-icon aria-label="Like">favorite</mat-icon>
+    <button mat-icon-button color="primary" (click)="likeComment()" (mouseenter)="showLikeButton = true"
+      (mouseleave)="showLikeButton = false">
+      <mat-icon matBadge="{{comment.reactions.length}}" matBadgeColor="accent" matBadgeSize="small"
+        [matBadgeHidden]="comment.reactions.length === 0" aria-label="Like">favorite</mat-icon>
+      <div class="button-container">
+        <button mat-icon-button *ngIf="showLikeButton && comment.reactions.length > 0"
+          (click)="showLikeUser = true; showDisUser = false; $event.stopPropagation(); showLikeButton = false">
+          <span>Click to show users</span>
+        </button>
+      </div>
     </button>
-    <button mat-icon-button color="primary">
-      <mat-icon aria-label="DisLike">thumb_down</mat-icon>
+
+    <button mat-icon-button color="primary" (click)="disComment()" (mouseenter)="showDisButton = true"
+      (mouseleave)="showDisButton = false">
+
+      <mat-icon matBadge="{{comment.disreactions.length}}" matBadgeColor="accent" matBadgeSize="small"
+        [matBadgeHidden]="comment.disreactions.length === 0" aria-label="Dis">thumb_down</mat-icon>
+      <div class="button-container">
+        <button mat-icon-button *ngIf="showDisButton && comment.disreactions.length > 0"
+          (click)="showDisUser = true; showLikeUser = false; $event.stopPropagation(); showDisButton = false">
+          <span>Click to show users</span>
+        </button>
+      </div>
     </button>
+
     <button mat-icon-button color="accent">
       <mat-icon aria-label="Share">share</mat-icon>
     </button>
   </mat-card-actions>
+
+  <app-like-users [reactions]="comment.reactions" *ngIf="showLikeUser" class="like-user-container"></app-like-users>
+  <app-dis-users [disreactions]="comment.disreactions" *ngIf="showDisUser" class="dis-user-container"></app-dis-users>
 </mat-card>

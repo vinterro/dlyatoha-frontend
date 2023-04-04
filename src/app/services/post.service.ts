@@ -19,6 +19,15 @@ export class PostService {
         return this.httpService.postFullRequest<Post>(`${this.routePrefix}`, post);
     }
 
+    public editPost(post: Post) {
+        return this.httpService.postFullRequest<Post>(`${this.routePrefix}/edit`, post)
+    }
+
+    public deletePost(postId: number) {
+        return this.httpService.deleteFullRequest<number>(`${this.routePrefix}/delete/${postId}` )
+    }
+
+
     public likePost(reaction: NewReaction) {
         return this.httpService.postFullRequest<Post>(`${this.routePrefix}/like`, reaction);
     }
@@ -26,4 +35,6 @@ export class PostService {
     public disPost(disreaction: NewDisreaction) {
         return this.httpService.postFullRequest<Post>(`${this.routePrefix}/dis`, disreaction);
     }
+
+
 }

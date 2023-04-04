@@ -16,14 +16,21 @@ import { UserProfileComponent } from './components/user-profile/user-profile.com
 import { AuthDialogComponent } from './components/auth-dialog/auth-dialog.component';
 import { CommentComponent } from './components/comment/comment.component';
 import { MaterialComponentsModule } from './components/common/material-components.module';
+import { EditComponent } from './components/edit/edit.component';
+import { LikeUsersComponent } from './components/like-users/like-users.component';
+import { DisUsersComponent } from './components/dis-users/dis-users.component';
+import { MatTooltipModule } from '@angular/material/tooltip';
+
+
 
 @NgModule({
-    declarations: [AppComponent, MainThreadComponent, PostComponent, HomeComponent, UserProfileComponent, AuthDialogComponent, CommentComponent],
-    imports: [BrowserModule, BrowserAnimationsModule, HttpClientModule, MaterialComponentsModule, RouterModule.forRoot(AppRoutes), FormsModule],
+    declarations: [AppComponent, MainThreadComponent, PostComponent, HomeComponent, UserProfileComponent, AuthDialogComponent, CommentComponent, EditComponent, LikeUsersComponent, DisUsersComponent],
+    imports: [BrowserModule, BrowserAnimationsModule, HttpClientModule, MaterialComponentsModule, RouterModule.forRoot(AppRoutes), FormsModule, MatTooltipModule],
     exports: [MaterialComponentsModule],
     providers: [
         { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },
-        { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true }
+        { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
+        [MainThreadComponent]
     ],
     bootstrap: [AppComponent]
 })

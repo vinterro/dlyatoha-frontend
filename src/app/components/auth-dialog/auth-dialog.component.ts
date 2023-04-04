@@ -26,7 +26,7 @@ export class AuthDialogComponent implements OnInit, OnDestroy {
         @Inject(MAT_DIALOG_DATA) public data: any,
         private authService: AuthenticationService,
         private snackBarService: SnackBarService
-    ) {}
+    ) { }
 
     public ngOnInit() {
         this.avatar = 'https://avatars.mds.yandex.net/get-ott/374297/2a000001616b87458162c9216ccd5144e94d/orig';

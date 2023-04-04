@@ -14,6 +14,7 @@ import { HubConnection, HubConnectionBuilder } from '@microsoft/signalr';
 import { SnackBarService } from '../../services/snack-bar.service';
 import { environment } from 'src/environments/environment';
 import { GyazoService } from 'src/app/services/gyazo.service';
+import { Reaction } from 'src/app/models/reactions/reaction';
 
 @Component({
     selector: 'app-main-thread',
@@ -24,6 +25,7 @@ export class MainThreadComponent implements OnInit, OnDestroy {
     public posts: Post[] = [];
     public cachedPosts: Post[] = [];
     public isOnlyMine = false;
+    public isLikedMine = false;
 
     public currentUser: User;
     public imageUrl: string;
@@ -78,6 +80,7 @@ export class MainThreadComponent implements OnInit, OnDestroy {
     }
 
     public sendPost() {
+
         const postSubscription = !this.imageFile
             ? this.postService.createPost(this.post)
             : this.gyazoService.uploadImage(this.imageFile).pipe(
@@ -128,11 +131,23 @@ export class MainThreadComponent implements OnInit, OnDestroy {
     public sliderChanged(event: MatSlideToggleChange) {
         if (event.checked) {
             this.isOnlyMine = true;
-            this.posts = this.cachedPosts.filter((x) => x.author.id === this.currentUser.id);
         } else {
             this.isOnlyMine = false;
-            this.posts = this.cachedPosts;
         }
+        this.sliderIsChanged(this.isOnlyMine)
+        this.sliderIsLiked(this.isLikedMine)
+
+    }
+
+    public sliderLiked(event: MatSlideToggleChange) {
+        if (event.checked) {
+            this.isLikedMine = true;
+        } else {
+            this.isLikedMine = false;
+        }
+        this.sliderIsChanged(this.isOnlyMine)
+        this.sliderIsLiked(this.isLikedMine)
+
     }
 
     public toggleNewPostContainer() {
@@ -151,8 +166,26 @@ export class MainThreadComponent implements OnInit, OnDestroy {
             if (newPost) {
                 this.addNewPost(newPost);
             }
+
         });
+        this.postHub.on('EditPost', (editedPost: Post) => {
+            if (editedPost) {
+                this.editPost(editedPost)
+                console.log('EitedPost on', editedPost)
+
+            }
+        });
+        this.postHub.on('DeletePost', (postId: number) => {
+            if (postId) {
+                this.deletePost(postId)
+                console.log('Deleted on')
+            }
+        });
+
+
+
     }
+
 
     public addNewPost(newPost: Post) {
         if (!this.cachedPosts.some((x) => x.id === newPost.id)) {
@@ -160,8 +193,36 @@ export class MainThreadComponent implements OnInit, OnDestroy {
             if (!this.isOnlyMine || (this.isOnlyMine && newPost.author.id === this.currentUser.id)) {
                 this.posts = this.sortPostArray(this.posts.concat(newPost));
             }
+            this.sliderIsLiked(this.isLikedMine)
         }
     }
+
+    public editPost(editedPost: Post) {
+        const index = this.cachedPosts.findIndex(post => post.id === editedPost.id);
+        if (index > -1) {
+            this.cachedPosts[index] = editedPost;
+            console.log(editedPost)
+            this.cachedPosts = this.sortPostArray(this.cachedPosts);
+            if (!this.isOnlyMine || (this.isOnlyMine && editedPost.author.id === this.currentUser.id)) {
+                const postIndex = this.posts.findIndex(post => post.id === editedPost.id);
+                if (postIndex > -1) {
+                    this.posts[postIndex] = editedPost;
+                    this.posts = this.sortPostArray(this.posts);
+                }
+            }
+        }
+    }
+
+    public deletePost(deletedPostId: number) {
+        this.cachedPosts = this.cachedPosts.filter(post => post.id !== deletedPostId);
+        if (!this.isOnlyMine || (this.isOnlyMine && this.posts.find(post => post.id === deletedPostId)?.author.id === this.currentUser.id)) {
+            this.posts = this.posts.filter(post => post.id !== deletedPostId);
+        }
+    }
+
+
+
+
 
     private getUser() {
         this.authService
@@ -172,5 +233,23 @@ export class MainThreadComponent implements OnInit, OnDestroy {
 
     private sortPostArray(array: Post[]): Post[] {
         return array.sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt));
+    }
+
+
+
+    private sliderIsChanged(isOnlyMine: boolean) {
+        if (isOnlyMine) {
+            this.posts = this.cachedPosts.filter((x) => x.author.id === this.currentUser.id);
+        } else {
+            this.posts = this.cachedPosts;
+        }
+
+    }
+
+    private sliderIsLiked(isLikedMine: boolean) {
+        if (isLikedMine) {
+            const reactionsWithId = this.posts.reduce((acc, post) => acc.concat(post.reactions.filter(reaction => reaction.user.id === this.currentUser.id)), []);
+            this.posts = this.cachedPosts.filter(post => post.reactions.some(reaction => reactionsWithId.includes(reaction)));
+        }
     }
 }

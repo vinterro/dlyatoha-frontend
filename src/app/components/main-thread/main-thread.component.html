@@ -35,12 +35,13 @@
         <mat-icon color="accent">add_comment</mat-icon>
       </button>
       <mat-slide-toggle (change)="sliderChanged($event)">Only mine</mat-slide-toggle>
+      <mat-slide-toggle (change)="sliderLiked($event)">Liked by me</mat-slide-toggle>
     </div>
     <mat-toolbar *ngIf="posts.length === 0 && !loadingPosts">
       <p class="no-content">There is nothing</p>
     </mat-toolbar>
     <div *ngFor="let _post of posts" class="user-post">
-      <app-post [post]="_post" [currentUser]="currentUser"></app-post>
+      <app-post [post]="_post" [currentUser]="currentUser" (postDeleted)="deletePost($event)"></app-post>
     </div>
   </div>
 </mat-card>
