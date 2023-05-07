@@ -15,7 +15,11 @@ export class LikeService {
     public constructor(private authService: AuthenticationService, private postService: PostService, private commentService: CommentService) { }
 
     public like(PostOrComment: Post | Comment, currentUser: User) {
+
+
         const innerPoOrCo = PostOrComment;
+
+
 
         const reaction: NewReaction = {
             entityId: innerPoOrCo.id,
@@ -24,6 +28,7 @@ export class LikeService {
         };
 
         // update current array instantly
+
         let hasDisreaction = innerPoOrCo.disreactions.some((x) => x.user.id === currentUser.id);
         if (hasDisreaction) {
             innerPoOrCo.disreactions = innerPoOrCo.disreactions.filter((x) => x.user.id !== currentUser.id)
@@ -69,6 +74,7 @@ export class LikeService {
 
 
     }
+
 
 
 }

@@ -15,8 +15,10 @@ export class GyazoService {
     }
 
     public deleteImage(imageId: string) {
+        imageId = 'a35cceab312542319ee9ca60ad472e8a';
         return this.httpService.deleteRequest(this.buildUrl(`https://api.gyazo.com/api/images/${imageId}`));
     }
+    ////////////////////////////////////////////////
 
     private buildUrl(url: string) {
         return `${url}?access_token=${environment.gyazoAccessToken}`;

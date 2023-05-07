@@ -1,0 +1,11 @@
+<form [formGroup]="forgotPasswordForm">
+  <h2 class="title">Want to share?</h2>
+  <p>Please enter your email address to reset your password.</p>
+
+  <mat-form-field>
+    <input matInput formControlName="email" placeholder="Email" type="email">
+  </mat-form-field>
+  <button mat-raised-button (click)="close()">Back</button>
+  <button mat-raised-button color="primary" type="submit" (click)="onSubmit()"
+    [disabled]="forgotPasswordForm.invalid">Share Post</button>
+</form>

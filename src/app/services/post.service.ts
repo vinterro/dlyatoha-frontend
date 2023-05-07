@@ -3,7 +3,8 @@ import { HttpInternalService } from './http-internal.service';
 import { Post } from '../models/post/post';
 import { NewReaction } from '../models/reactions/newReaction';
 import { NewPost } from '../models/post/new-post';
-import { NewDisreaction } from '../models/disreactions/newDisReaction';
+import { NewDisreaction } from '../models/disreactions/newDisreaction';
+
 
 @Injectable({ providedIn: 'root' })
 export class PostService {
@@ -15,6 +16,12 @@ export class PostService {
         return this.httpService.getFullRequest<Post[]>(`${this.routePrefix}`);
     }
 
+    public sendEmail(email: string, postId: number, userName: string) {
+        const payload = { email: email, userName: userName };
+
+        return this.httpService.postRequest<string>(`${this.routePrefix}/share/${postId}`, payload)
+    }
+
     public createPost(post: NewPost) {
         return this.httpService.postFullRequest<Post>(`${this.routePrefix}`, post);
     }
@@ -24,12 +31,13 @@ export class PostService {
     }
 
     public deletePost(postId: number) {
-        return this.httpService.deleteFullRequest<number>(`${this.routePrefix}/delete/${postId}` )
+        return this.httpService.deleteFullRequest<number>(`${this.routePrefix}/delete/${postId}`)
     }
 
 
     public likePost(reaction: NewReaction) {
         return this.httpService.postFullRequest<Post>(`${this.routePrefix}/like`, reaction);
+
     }
 
     public disPost(disreaction: NewDisreaction) {

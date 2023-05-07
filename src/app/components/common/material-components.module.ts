@@ -31,6 +31,7 @@ import { MatSliderModule } from '@angular/material/slider';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatSortModule } from '@angular/material/sort';
 import { MatNativeDateModule } from '@angular/material/core';
+import { MatFormFieldModule } from '@angular/material/form-field';
 
 @NgModule({
     imports: [
@@ -64,7 +65,10 @@ import { MatNativeDateModule } from '@angular/material/core';
         MatSnackBarModule,
         MatSliderModule,
         MatSlideToggleModule,
-        MatSortModule
+        MatSortModule,
+        MatFormFieldModule
+
+
     ],
     exports: [
         MatToolbarModule,
@@ -96,8 +100,9 @@ import { MatNativeDateModule } from '@angular/material/core';
         MatSnackBarModule,
         MatSliderModule,
         MatSlideToggleModule,
-        MatSortModule
+        MatSortModule,
+        MatFormFieldModule
     ],
     declarations: []
 })
-export class MaterialComponentsModule {}
+export class MaterialComponentsModule { }

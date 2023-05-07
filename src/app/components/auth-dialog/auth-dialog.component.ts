@@ -1,10 +1,13 @@
 import { Component, OnInit, Inject, OnDestroy } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatDialogRef, MAT_DIALOG_DATA, MatDialog } from '@angular/material/dialog';
 import { DialogType } from '../../models/common/auth-dialog-type';
 import { Subject } from 'rxjs';
 import { AuthenticationService } from '../../services/auth.service';
 import { takeUntil } from 'rxjs/operators';
 import { SnackBarService } from '../../services/snack-bar.service';
+import { EventService } from 'src/app/services/event.service';
+import { SendEmailComponent } from './send-email/send-email.comonent';
+import { AuthDialogService } from 'src/app/services/auth-dialog.service';
 
 @Component({
     templateUrl: './auth-dialog.component.html',
@@ -12,6 +15,7 @@ import { SnackBarService } from '../../services/snack-bar.service';
 })
 export class AuthDialogComponent implements OnInit, OnDestroy {
     public dialogType = DialogType;
+    public authDialogServ: AuthDialogService;
     public userName: string;
     public password: string;
     public avatar: string;
@@ -25,7 +29,9 @@ export class AuthDialogComponent implements OnInit, OnDestroy {
         private dialogRef: MatDialogRef<AuthDialogComponent>,
         @Inject(MAT_DIALOG_DATA) public data: any,
         private authService: AuthenticationService,
-        private snackBarService: SnackBarService
+        private snackBarService: SnackBarService,
+        private dialog: MatDialog,
+        private eventService: EventService
     ) { }
 
     public ngOnInit() {
@@ -46,7 +52,8 @@ export class AuthDialogComponent implements OnInit, OnDestroy {
         this.authService
             .login({ email: this.email, password: this.password })
             .pipe(takeUntil(this.unsubscribe$))
-            .subscribe((response) => this.dialogRef.close(response), (error) => this.snackBarService.showErrorMessage(error));
+            .subscribe((response) => this.dialogRef.close(response), (error) => this.snackBarService.showUsualMessage(error));
+
     }
 
     public signUp() {
@@ -54,5 +61,19 @@ export class AuthDialogComponent implements OnInit, OnDestroy {
             .register({ userName: this.userName, password: this.password, email: this.email, avatar: this.avatar })
             .pipe(takeUntil(this.unsubscribe$))
             .subscribe((response) => this.dialogRef.close(response), (error) => this.snackBarService.showErrorMessage(error));
+
+    }
+
+    public ForgotPass() {
+        this.dialogRef.close()
+        this.dialog.open(SendEmailComponent, {
+            minHeight: 275,
+            autoFocus: true,
+            backdropClass: 'dialog-backdrop',
+            position: {
+                top: '0'
+            }
+
+        });
     }
 }

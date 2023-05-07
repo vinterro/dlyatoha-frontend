@@ -67,7 +67,6 @@ export class EditComponent implements OnInit, OnDestroy {
 
     public sendEditPost() {
         this.isOriginalPost = false;
-        console.log('send', this.post)
         const postSubscription = !this.imageFile
             ? this.postService.editPost(this.post)
             : this.gyazoService.uploadImage(this.imageFile).pipe(

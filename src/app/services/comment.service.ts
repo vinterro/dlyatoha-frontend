@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpInternalService } from './http-internal.service';
 import { NewComment } from '../models/comment/new-comment';
 import { Comment } from '../models/comment/comment';
-import { NewDisreaction } from '../models/disreactions/newDisReaction';
+import { NewDisreaction } from '../models/disreactions/newDisreaction';
 import { NewReaction } from '../models/reactions/newReaction';
 
 @Injectable({ providedIn: 'root' })

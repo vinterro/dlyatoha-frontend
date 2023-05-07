@@ -12,6 +12,7 @@
         [type]="hidePass ? 'password' : 'text'" placeholder="Password">
       <mat-icon matSuffix (click)="hidePass = !hidePass">{{hidePass ? 'visibility' : 'visibility_off'}}</mat-icon>
     </mat-form-field>
+    <button (click)="ForgotPass()">Forgot password?</button>
   </form>
 </div>
 <div class="actions">

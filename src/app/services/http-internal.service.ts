@@ -42,13 +42,27 @@ export class HttpInternalService {
         return this.http.post<T>(this.buildUrl(url), payload, { headers: this.getHeaders() });
     }
 
+    public postStringRequest<T>(url: string, payload: string): Observable<T> {
+        const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+        return this.http.post<T>(this.buildUrl(url), payload, { headers: headers });
+    }
+
     public postFullRequest<T>(url: string, payload: object): Observable<HttpResponse<T>> {
         return this.http.post<T>(this.buildUrl(url), payload, { headers: this.getHeaders(), observe: 'response' });
+    }
+
+    public postFullStringRequest<T>(url: string, payload: string): Observable<HttpResponse<T>> {
+        const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+        return this.http.post<T>(this.buildUrl(url), payload, { headers: headers, observe: 'response' });
     }
 
     public putRequest<T>(url: string, payload: object): Observable<T> {
         return this.http.put<T>(this.buildUrl(url), payload, { headers: this.getHeaders() });
     }
+
+
+
+
 
     public putFullRequest<T>(url: string, payload: object): Observable<HttpResponse<T>> {
         return this.http.put<T>(this.buildUrl(url), payload, { headers: this.getHeaders(), observe: 'response' });
@@ -72,4 +86,7 @@ export class HttpInternalService {
     public prepareData(payload: object): string {
         return JSON.stringify(payload);
     }
+
+
+
 }

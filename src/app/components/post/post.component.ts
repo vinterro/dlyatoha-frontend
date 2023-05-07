@@ -14,7 +14,12 @@ import { SnackBarService } from '../../services/snack-bar.service';
 import { DisService } from 'src/app/services/dis.service';
 import { EditService } from 'src/app/services/Edit.service';
 import { PostService } from 'src/app/services/post.service';
-import { LikeUsersComponent } from '../like-users/like-users.component';
+import { GyazoService } from 'src/app/services/gyazo.service';
+import { SharePostComponent } from './share-post/share-post.comonent';
+import { MatDialog } from '@angular/material/dialog';
+import { DialogService } from 'src/app/services/dialog.service';
+
+
 
 @Component({
     selector: 'app-post',
@@ -26,6 +31,7 @@ export class PostComponent implements OnDestroy {
     @Input() public post: Post;
     @Input() public currentUser: User;
     @Output() postDeleted = new EventEmitter<number>();
+    @Output() postLiked = new EventEmitter<number>();
     @HostListener('document:click', ['$event'])
     onDocumentClick(event: MouseEvent) {
         if (!this._elementRef.nativeElement.contains(event.target)) {
@@ -34,6 +40,7 @@ export class PostComponent implements OnDestroy {
 
 
         }
+
     }
     public showLikeButton = false;
     public showDisButton = false;
@@ -47,6 +54,7 @@ export class PostComponent implements OnDestroy {
     private unsubscribe$ = new Subject<void>();
 
     public constructor(
+        private dialog: MatDialog,
         private _elementRef: ElementRef,
         private authService: AuthenticationService,
         private authDialogService: AuthDialogService,
@@ -55,7 +63,10 @@ export class PostComponent implements OnDestroy {
         private likeService: LikeService,
         private disService: DisService,
         private commentService: CommentService,
-        private snackBarService: SnackBarService
+        private snackBarService: SnackBarService,
+        private gyazoService: GyazoService,
+        private dialogService: DialogService
+
     ) { }
 
     public ngOnDestroy() {
@@ -116,11 +127,18 @@ export class PostComponent implements OnDestroy {
                     switchMap((userResp) => this.likeService.like(this.post, userResp)),
                     takeUntil(this.unsubscribe$)
                 )
-                .subscribe((post) => (this.post = post as Post));
-
+                .subscribe((post) => (this.post = post as Post),
+                );
+            if (this.post.reactions.length === 0) {
+                this.hideLikeUserComponent()
+            }
+            if (this.post.disreactions.length === 0) {
+                this.hideDisUserComponent()
+            }
 
             return;
         }
+
 
         this.likeService
             .like(this.post, this.currentUser)
@@ -132,6 +150,8 @@ export class PostComponent implements OnDestroy {
         if (this.post.disreactions.length === 0) {
             this.hideDisUserComponent()
         }
+
+
     }
 
 
@@ -143,7 +163,12 @@ export class PostComponent implements OnDestroy {
                     takeUntil(this.unsubscribe$)
                 )
                 .subscribe((post) => (this.post = post as Post));
-
+            if (this.post.reactions.length === 0) {
+                this.hideLikeUserComponent()
+            }
+            if (this.post.disreactions.length === 0) {
+                this.hideDisUserComponent()
+            }
             return;
         }
 
@@ -219,6 +244,8 @@ export class PostComponent implements OnDestroy {
             (postIdResp) => {
                 this.postDeleted.emit(postIdResp.body);
                 this.loading = false;
+                this.gyazoService.deleteImage('a35cceab312542319ee9ca60ad472e8a')
+
             },
             (error) => this.snackBarService.showErrorMessage(error)
         );
@@ -241,6 +268,8 @@ export class PostComponent implements OnDestroy {
             this.post.comments[index] = comment;
             // this.post.comments = this.sortCommentArray(this.post.comments);
         }
+
+
     }
 
     deleteComment(deleteCommentId: number) {
@@ -282,6 +311,26 @@ export class PostComponent implements OnDestroy {
             },
             (error) => this.snackBarService.showErrorMessage(error)
         );
+
+
+    }
+
+    public sharePost() {
+        if (!this.currentUser) {
+            this.catchErrorWrapper(this.authService.getUser())
+                .pipe(
+
+                    takeUntil(this.unsubscribe$))
+                .subscribe(() => true);
+
+
+
+
+
+            return;
+        }
+
+        this.dialogService.openShareDialog(this.post.id, this.currentUser.userName)
 
 
     }

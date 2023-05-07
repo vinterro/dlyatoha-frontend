@@ -7,41 +7,35 @@ import { map, takeUntil } from 'rxjs/operators';
 import { AuthenticationService } from './auth.service';
 import { Subscription, Subject } from 'rxjs';
 import { SendEmailComponent } from '../components/auth-dialog/send-email/send-email.comonent';
+import { SharePostComponent } from '../components/post/share-post/share-post.comonent';
 
 @Injectable({ providedIn: 'root' })
-export class AuthDialogService implements OnDestroy {
+export class DialogService implements OnDestroy {
     private unsubscribe$ = new Subject<void>();
 
     public constructor(private dialog: MatDialog, private authService: AuthenticationService) { }
 
-    public openAuthDialog(type: DialogType) {
-        const dialog = this.dialog.open(AuthDialogComponent, {
-            data: { dialogType: type },
-            minWidth: 300,
+    public openShareDialog(postId: number, userName: string) {
+        this.dialog.open(SharePostComponent, {
+            minHeight: 275,
             autoFocus: true,
             backdropClass: 'dialog-backdrop',
             position: {
                 top: '0'
+            },
+            data: {
+                postId: postId,
+                userName: userName
+
             }
+
         });
-
-        dialog
-            .afterClosed()
-            .pipe(takeUntil(this.unsubscribe$))
-            .subscribe((result: User) => {
-                if (result) {
-                    this.authService.setUser(result);
-                }
-            });
     }
 
 
-    public openSendEmailDialog() {
 
 
-    }
-
-    public ngOnDestroy() {
+    ngOnDestroy() {
         this.unsubscribe$.next();
         this.unsubscribe$.complete();
     }
